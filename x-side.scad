@@ -4,6 +4,9 @@ servo_hole=true;
 // Cut the hole for the X end-stop screw
 endstop_hole=true;
 
+// Which side? Primarily for determining which side to make fancy
+side="right";
+
 // Cut holes for a lower accessory
 accessory_holes=true;
 accessory_bolt_size=2;
@@ -154,8 +157,14 @@ module SidePanelBody()
 		{
 			union()
 			{
-				FancyFormer();
-				translate([0, 0, t]) FancyFormer();
+				if(side=="left")
+				{
+					FancyFormer();
+				}
+				if(side=="right")
+				{
+					translate([0, 0, t]) FancyFormer();
+				}
 			}
 		}
 
@@ -174,3 +183,6 @@ module ServoHoleFormer()
 	translate([-servo_width/2 - servo_bolt_size/2-1, 0, 0])
 	cylinder(h=t+j+j, r=servo_bolt_size/2, $fn=30, center=true);
 }
+
+
+SidePanel();
