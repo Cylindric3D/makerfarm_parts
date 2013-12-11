@@ -1,4 +1,4 @@
-include <x-side.scad>;
+use <x-side.scad>;
 
 accessory_bolt_size=2;
 accessory_hole_centres=15;
@@ -46,10 +46,10 @@ union()
 		cylinder(h=10, r=accessory_bolt_size/2, $fn=30);
 	}
 	
-	translate([-12, 12, 0]) rotate([-30, -30, 0]) LED();
-	translate([0, 15, 0]) rotate([-30, 0, 0]) LED();
-	translate([12, 12, 0]) rotate([-30, 30, 0]) LED();
-	translate([15, 0, 0]) rotate([0, 30, 0]) LED();
+	%translate([-12, 12, 0]) rotate([-30, -30, 0]) LED();
+	%translate([0, 15, 0]) rotate([-30, 0, 0]) LED();
+	%translate([12, 12, 0]) rotate([-30, 30, 0]) LED();
+	%translate([15, 0, 0]) rotate([0, 30, 0]) LED();
 }
 
 module LED()
