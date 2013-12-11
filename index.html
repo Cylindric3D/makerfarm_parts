@@ -36,16 +36,10 @@
 				});
 
 				thingiurlbase = "javascripts";
-				thingiview1 = new Thingiview("viewer1");
-				thingiview1.setObjectColor('#C0D8F0');
-				thingiview1.initScene();
-				thingiview1.loadSTL("../stl/part-x-side.stl");
-
-				thingiview2 = new Thingiview("viewer2");
-				thingiview2.setObjectColor('#C0D8F0');
-				thingiview2.initScene();
-				thingiview2.loadSTL("../stl/picam-mount.stl");
-
+				thingiview = new Thingiview("viewer");
+				thingiview.setObjectColor('#C0D8F0');
+				thingiview.initScene();
+				thingiview.loadSTL("../stl/part-x-side.stl");
 			}
 
 			function getUrlVars() {
@@ -73,9 +67,15 @@
 			<div class="inner clearfix">
 				<section id="main-content">
 					<h3><a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to Cylindric3D's MakerFarm Parts</h3>
-					<div id="viewer1" style="width:40%;height:400px"></div>
-					<div id="viewer2" style="width:40%;height:400px"></div>
-					<h3><a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+					<h4>X-Carriage Side Bracket</h4>
+					<img src="images/part-x-side.png" width="200" style="float:left;" />
+					<p>This replaces the small triangular side-bracket of the X-Carriage. The OpenSCAD file has parameters for cutting a hole to fit a servo, or the normal end-stop bolt. There are also (optional) holes at the lower end of the bracket to attach other accessories, such as LED rings, probe-mounts, whatever.</p>
+					
+					<h4 style="clear:both;">RaspberryPi Camera Bracket</h4>
+					<img src="images/picam-mount.png" width="200" style="float:left;" />
+					<p>A simple bracket to mount a RaspberryPi camera module to the back of the printer. The OpenSCAD file has parameters in it to allow adjusting how far across the camera will sit.</p>
+					
+					<h3 style="clear:both;"><a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
 					<p><a href="https://github.com/Cylindric">@Cylindric</a></p>
 				</section>
 
