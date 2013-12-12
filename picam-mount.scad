@@ -9,8 +9,11 @@ t=1;
 // Distance from panel to camera (min is ~13mm)
 camera_offset=80;
 
+// Fixing bolt radius
+fix_bolt=1.5;
+
 // Panel thickness
-p=6.35;
+p=6.5;
 
 // Panel angle
 a=21.8;
@@ -28,28 +31,56 @@ module PiCamMount()
 {
 	union()
 	{
-		// Bracket
-		translate([-w-p-t, 0, t]) cube([t, h, 11.56+p]);
-		translate([-w-t, 0, t]) cube([t, h, 11.56+p]);
+		difference()
+		{
+			// Brackets
+			union()
+			{
+				translate([-w-p-t*2, 0, t]) cube([t*2, h, 11.56+p]);
+				translate([-w-t*2, 0, t]) cube([t*2, h, 11.56+p]);
+			}
+
+			// Fixing holes
+			translate([-w-p-t*2-j, t*5, t*5]) rotate([0, 90, 0]) cylinder(r=fix_bolt, h=p+t*2+j*2, $fn=30);
+		}
 
 		// Angle Support
 		translate([-w-p, h-t, t]) cube([p, t, tan(a)*h]);
 
-		// Support
-		translate([-w, h-t, t]) cube([25.1+3+w, t, 1]);
-		translate([-w, 0, t]) cube([25.1+3+w, t, 1]);
+		// Supports
+		translate([-w, h-t, t]) cube([25.1+3+w, t, 1]); // top
+		translate([-w-p-t*2, 0, t]) cube([25.1+3+w+p+t*2, t, 1]); //bottom
+		translate([25.1+3-t, 0, t]) cube([t, h, 1]); //right
 
-		// Base
+		// Reinforce the big hole
+		if(w > 10)
+		{
+			hull()
+			{
+				translate([-w+t*3, t*3, 0]) cube([t*2, t*2, t]); // diagonal
+				translate([-t*4, h-t*4, 0]) cube([t*2, t*2, t]); // diagonal
+			}
+			hull()
+			{
+				translate([-w+t*3, h-t*4, 0]) cube([t*2, t*2, t]); // diagonal 2
+				translate([-t*4, t*3, 0]) cube([t*2, t*2, t]); // diagonal 2
+			}
+		}
+
 		difference()
 		{
 			union()
 			{
-				translate([-w-p-t, 0, 0]) cube([25.1+3+w+p+t, h, t]);
-				translate([2, 9.3-4, 0]) cylinder(r=r_hole*2, h=t*3, $fn=30);
-				translate([2, 21.9-4, 0]) cylinder(r=r_hole*2, h=t*3, $fn=30);
-				translate([23.1, 9.3-4, 0]) cylinder(r=r_hole*2, h=t*3, $fn=30);
-				translate([23.1, 21.9-4, 0]) cylinder(r=r_hole*2, h=t*3, $fn=30);
+				// Base plate
+				translate([-w-p-t*2, 0, 0]) cube([25.1+3+w+p+t*2, h, t]);
+
+				// Hole reinforcers and pi-spacer
+				translate([2, 9.3-4, 0]) cylinder(r=r_hole*3, h=t*4, $fn=30);
+				translate([2, 21.9-4, 0]) cylinder(r=r_hole*3, h=t*4, $fn=30);
+				translate([23.1, 9.3-4, 0]) cylinder(r=r_hole*3, h=t*4, $fn=30);
+				translate([23.1, 21.9-4, 0]) cylinder(r=r_hole*3, h=t*4, $fn=30);
 			}
+
 			// Thin out the base
 			if(w > 10)
 			{
@@ -70,5 +101,5 @@ module PiCamMount()
 }
 
 
-%translate([0, -4, 5]) PiCam();
+//%translate([0, -4, 5]) PiCam();
 PiCamMount();
