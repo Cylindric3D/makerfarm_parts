@@ -20,15 +20,16 @@ accessory_hole_centres=15;
 depth_gauge=true;
 
 // Fancy the shape up a bit?
-fancy=false;
+fancy=true;
 fancy_border_size=1;
 fancy_border_inset=0.75;
+
 
 // Panel thickness
 t=6.35;
 
-// Jitter
-j=0.1;
+// Jitter. This should be much less than one layer height.
+j=0.05;
 
 
 
@@ -67,62 +68,79 @@ module SidePanel()
 			cylinder(h=t+j+j, r=accessory_bolt_size/2, $fn=30);
 		}
 
+		// Take out the space where the depth-gauge mount will go
 		if(depth_gauge)
 		{
-			translate([45-24+fancy_border_size+j, fancy_border_size-j, -j])
-			cube([24+j, 28.5-fancy_border_size*2+j*2, t+j*2]);
+			translate([29.4+j, 1, -j])
+			cube([15.8, 24.2, t+j+j]);
 		}
 	}
 	
-	translate([45-24+fancy_border_size, -28.5, 0])
-	color([0.8,0.2,0.2])
-	DepthGaugeMountBlock();
+	if(depth_gauge)
+	{
+		color([0.8,0.2,0.2])
+		translate([38.8, -13.1, 0])
+		DepthGaugeMountBlock();
+	}
 }
 
 
+module DepthGaugePinFormer(r_major)
+{
+	union()
+	{
+		cylinder(r=r_major, h=t, $fn=30);
+		
+		linear_extrude(height=t) 
+		polygon(points=[
+			[0, -r_major], // 0
+			[4.2, -r_major], // 1
+			[6.2, -11.1], // 2
+			[10.2, -11.1], // 2a
+			[10.2, 11.1], // 3a
+			[6.2, 11.1], // 3
+			[2.2, r_major], // 4
+			[0, r_major] // 5
+		]);
+	}
+}
+
 module DepthGaugeMountBlock()
 {
+	r_major=8.6;
+	
 	difference()
 	{
 		difference()
 		{
 			if(fancy)
 			{
-				translate([0, fancy_border_size, 0]) cube([24-fancy_border_size, 28.5-fancy_border_size*2, t-fancy_border_inset]);
+				translate([-r_major-1, -12.1, 0])
+				union()
+				{
+					cube([r_major+1+6.2, 24.2, t-fancy_border_inset]);
+					translate([fancy_border_size/2, 0, t-fancy_border_inset-j]) cube([r_major+1+6.2-fancy_border_size/2, fancy_border_size, fancy_border_inset+j]);
+				}
 			}
 			else
 			{
-				cube([24, 28.5, t]);
+				translate([-r_major-1, -12.1, 0])
+				cube([r_major+1+6.2, 24.2, t]);
 			}
 		}
 		
 		// Pin Former
-		translate([14, 13, 15/2-5+j])
-		union()
-		{
-			cylinder(r=9.1, h=t, $fn=30);
-			
-			linear_extrude(height=t) 
-			polygon(points=[
-				[0, -9.1], // 0
-				[8.2, -9.1], // 1
-				[10.2, -11.1], // 2
-				[14.2, -11.1], // 2a
-				[14.2, 11.1], // 3a
-				[10.2, 11.1], // 3
-				[8.2, 9.1], // 4
-				[0, 9.1] // 5
-			]);
-		}
+		translate([0, 0, 2])
+		DepthGaugePinFormer(r_major);
 	}
 	
 	// Pin
-	shaft_size=3.25;
+	shaft_size=3;
 	shaft_length=5*1.2;
-	head_size=4;
+	head_size=3.3;
 	slot_size=1.5;
 
-	translate([14, 13, 15/2-5+j])
+	translate([0, 0, 2-j])
 	difference()
 	{
 		union()
@@ -168,7 +186,7 @@ module FancyFormer()
 		]);
 
 		// Mount hole
-		translate([22.05, -2.9, 0]) cylinder(h=d+j+j, r=2+b, $fn=30, center=true);
+		translate([22.05, -2.9, 0]) cylinder(h=d*2+j+j, r=2+b, $fn=30, center=true);
 
 		// End-stop hole
 		if(endstop_hole)
@@ -263,8 +281,8 @@ module ServoHoleFormer()
 
 if(side == "left")
 {
-//	SidePanel();
-DepthGaugeMountBlock();
+	//DepthGaugeMountBlock();
+	SidePanel();
 }
 else
 {
