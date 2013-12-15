@@ -100,29 +100,46 @@ module DepthGaugeMountBlock()
 		translate([14, 13, 15/2-5+j])
 		union()
 		{
-			cylinder(r=16.2/2, h=t, $fn=30);
+			cylinder(r=9.1, h=t, $fn=30);
 			
 			linear_extrude(height=t) 
 			polygon(points=[
-				[0, -8.1], // 0
-				[8.2, -8.1-1], // 1
-				[10.2, -8.1-3], // 2
-				[14.2, -8.1-3], // 2a
-				[14.2, 8.1+3], // 3a
-				[10.2, 8.1+3], // 3
-				[8.2, 8.1+1], // 4
-				[0, 8.1] // 5
+				[0, -9.1], // 0
+				[8.2, -9.1], // 1
+				[10.2, -11.1], // 2
+				[14.2, -11.1], // 2a
+				[14.2, 11.1], // 3a
+				[10.2, 11.1], // 3
+				[8.2, 9.1], // 4
+				[0, 9.1] // 5
 			]);
 		}
 	}
 	
-	translate([14, 13, 15/2-5+j])
-	union()
-	{	
-		cylinder(r=3.25, h=t/2, $fn=30);
-		translate([0, 0, t/2]) sphere(r=3.25, $fn=30);
-	}
+	// Pin
+	shaft_size=3.25;
+	shaft_length=5*1.2;
+	head_size=4;
+	slot_size=1.5;
 
+	translate([14, 13, 15/2-5+j])
+	difference()
+	{
+		union()
+		{	
+			// Stalk
+			translate([0,0,-j]) cylinder(r1=shaft_size, r2=head_size, h=shaft_length+j, $fn=30);
+
+			// Cap
+			translate([0, 0, shaft_length]) 
+			intersection()
+			{
+				sphere(r=head_size, $fn=30);
+				translate([0, 0, head_size/2]) cube([head_size*2, head_size*2, head_size], center=true);
+			}
+		}
+		translate([-slot_size/2, -head_size-j, 0]) cube([slot_size, head_size*2+j+j, shaft_length+head_size+j]);
+	}
 }
 
 module FancyFormer()
