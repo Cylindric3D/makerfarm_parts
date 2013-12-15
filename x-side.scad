@@ -1,24 +1,26 @@
-// Cut hole for a servo - useful for auto-z-levelling
-servo_hole=true;
-
-// Cut the hole for the X end-stop screw
-endstop_hole=true;
-
 // Which side? Primarily for determining which side to make fancy
-side="right";
+side="left";
 
-// Cut holes for a lower accessory
-accessory_holes=true;
-accessory_bolt_size=2;
-accessory_hole_centres=15;
-
-// Dimensions of the servo hole
+// Cut hole for a servo - useful for auto-z-levelling
+// Also specify the dimensions of the servo hole
+servo_hole=false;
 servo_width=23.5;  // Width of cutout for servo
 servo_height=12.5; // Height of cutout for servo
 servo_bolt_size=3; // Diameter of bolt shaft
 
+// Cut the hole for the X end-stop screw
+endstop_hole=false;
+
+// Cut holes for a lower accessory
+accessory_holes=false;
+accessory_bolt_size=2;
+accessory_hole_centres=15;
+
+// Depth Gauge Mount
+depth_gauge=true;
+
 // Fancy the shape up a bit?
-fancy=true;
+fancy=false;
 fancy_border_size=1;
 fancy_border_inset=0.75;
 
@@ -26,13 +28,15 @@ fancy_border_inset=0.75;
 t=6.35;
 
 // Jitter
-j=1;
+j=0.1;
 
 
 
 // Side panel with the various holes cut out
 module SidePanel()
 {
+	translate([0, 0, t])
+	rotate([180, 0, 0])
 	difference()
 	{
 		SidePanelBody();
@@ -63,9 +67,63 @@ module SidePanel()
 			cylinder(h=t+j+j, r=accessory_bolt_size/2, $fn=30);
 		}
 
+		if(depth_gauge)
+		{
+			translate([45-24+fancy_border_size+j, fancy_border_size-j, -j])
+			cube([24+j, 28.5-fancy_border_size*2+j*2, t+j*2]);
+		}
 	}
+	
+	translate([45-24+fancy_border_size, -28.5, 0])
+	color([0.8,0.2,0.2])
+	DepthGaugeMountBlock();
 }
 
+
+module DepthGaugeMountBlock()
+{
+	difference()
+	{
+		difference()
+		{
+			if(fancy)
+			{
+				translate([0, fancy_border_size, 0]) cube([24-fancy_border_size, 28.5-fancy_border_size*2, t-fancy_border_inset]);
+			}
+			else
+			{
+				cube([24, 28.5, t]);
+			}
+		}
+		
+		// Pin Former
+		translate([14, 13, 15/2-5+j])
+		union()
+		{
+			cylinder(r=16.2/2, h=t, $fn=30);
+			
+			linear_extrude(height=t) 
+			polygon(points=[
+				[0, -8.1], // 0
+				[8.2, -8.1-1], // 1
+				[10.2, -8.1-3], // 2
+				[14.2, -8.1-3], // 2a
+				[14.2, 8.1+3], // 3a
+				[10.2, 8.1+3], // 3
+				[8.2, 8.1+1], // 4
+				[0, 8.1] // 5
+			]);
+		}
+	}
+	
+	translate([14, 13, 15/2-5+j])
+	union()
+	{	
+		cylinder(r=3.25, h=t/2, $fn=30);
+		translate([0, 0, t/2]) sphere(r=3.25, $fn=30);
+	}
+
+}
 
 module FancyFormer()
 {
@@ -185,4 +243,13 @@ module ServoHoleFormer()
 }
 
 
-SidePanel();
+
+if(side == "left")
+{
+//	SidePanel();
+DepthGaugeMountBlock();
+}
+else
+{
+	translate([0, 0, t]) rotate([180, 0, 0]) SidePanel();
+}
