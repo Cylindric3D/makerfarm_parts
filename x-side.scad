@@ -1,4 +1,6 @@
-// Which side? Primarily for determining which side to make fancy
+include <lib/DepthGauge.scad>
+
+ // Which side? Primarily for determining which side to make fancy
 side="left";
 
 // Cut hole for a servo - useful for auto-z-levelling
@@ -20,7 +22,7 @@ accessory_hole_centres=15;
 depth_gauge=true;
 
 // Fancy the shape up a bit?
-fancy=true;
+fancy=false;
 fancy_border_size=1;
 fancy_border_inset=0.75;
 
@@ -71,93 +73,66 @@ module SidePanel()
 		// Take out the space where the depth-gauge mount will go
 		if(depth_gauge)
 		{
-			translate([29.4+j, 1, -j])
-			cube([15.8, 24.2, t+j+j]);
+			translate([45-dg_width+2, 1, -j])
+			cube([dg_width+j, 24.2, t+j+j]);
 		}
 	}
 	
 	if(depth_gauge)
 	{
 		color([0.8,0.2,0.2])
-		translate([38.8, -13.1, 0])
+		translate([45, -13.1, 0])
 		DepthGaugeMountBlock();
 	}
 }
 
 
-module DepthGaugePinFormer(r_major)
-{
-	union()
-	{
-		cylinder(r=r_major, h=t, $fn=30);
-		
-		linear_extrude(height=t) 
-		polygon(points=[
-			[0, -r_major], // 0
-			[4.2, -r_major], // 1
-			[6.2, -11.1], // 2
-			[10.2, -11.1], // 2a
-			[10.2, 11.1], // 3a
-			[6.2, 11.1], // 3
-			[2.2, r_major], // 4
-			[0, r_major] // 5
-		]);
-	}
-}
-
 module DepthGaugeMountBlock()
 {
-	r_major=8.6;
+	// Margin around the actual bracket
+	m=2;
+
+	// Tolerance for the bracket cutout
+	tol=0.2;
+
+	// Size of the slot
+	slot_size=0;
+
+	//%translate([0, 0, dg_thickness]) DepthGauge_MountBlock();		
 	
 	difference()
 	{
-		difference()
-		{
-			if(fancy)
-			{
-				translate([-r_major-1, -12.1, 0])
-				union()
-				{
-					cube([r_major+1+6.2, 24.2, t-fancy_border_inset]);
-					translate([fancy_border_size/2, 0, t-fancy_border_inset-j]) cube([r_major+1+6.2-fancy_border_size/2, fancy_border_size, fancy_border_inset+j]);
-				}
-			}
-			else
-			{
-				translate([-r_major-1, -12.1, 0])
-				cube([r_major+1+6.2, 24.2, t]);
-			}
-		}
-		
-		// Pin Former
-		translate([0, 0, 2])
-		DepthGaugePinFormer(r_major);
-	}
-	
-	// Pin
-	shaft_size=3;
-	shaft_length=5*1.2;
-	head_size=3.3;
-	slot_size=1.5;
+		translate([-dg_length-m, -dg_width/2-m, 0])
+		cube([dg_length+m, dg_width+m*2, t]);
 
-	translate([0, 0, 2-j])
+		translate([0, 0, dg_thickness]) 
+		minkowski()
+		{
+			DepthGauge_MountBlock(pin=false);
+			sphere(r=tol);
+		}
+	}
+
+	translate([-dg_pin_centre, 0, dg_thickness/2])
 	difference()
 	{
 		union()
 		{	
 			// Stalk
-			translate([0,0,-j]) cylinder(r1=shaft_size, r2=head_size, h=shaft_length+j, $fn=30);
+			translate([0,0,-tol-j]) cylinder(r=dg_pin_radius-tol/2, h=dg_thickness+tol+j, $fn=30);
 
 			// Cap
-			translate([0, 0, shaft_length]) 
-			intersection()
-			{
-				sphere(r=head_size, $fn=30);
-				translate([0, 0, head_size/2]) cube([head_size*2, head_size*2, head_size], center=true);
-			}
+			translate([0, 0, dg_thickness-j]) 
+			sphere(r=dg_pin_radius-tol/2, $fn=30);
 		}
-		translate([-slot_size/2, -head_size-j, 0]) cube([slot_size, head_size*2+j+j, shaft_length+head_size+j]);
+	
+		if(slot_size > 0)
+		{
+			translate([-slot_size/2, -dg_pin_radius, 0]) 
+			cube([slot_size, dg_pin_radius*2, dg_thickness*2]);
+		}
 	}
+
 }
 
 module FancyFormer()
@@ -281,7 +256,6 @@ module ServoHoleFormer()
 
 if(side == "left")
 {
-	//DepthGaugeMountBlock();
 	SidePanel();
 }
 else
