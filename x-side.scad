@@ -97,8 +97,6 @@ module DepthGaugeMountBlock()
 
 	// Size of the slot
 	slot_size=0;
-
-	//%translate([0, 0, dg_thickness]) DepthGauge_MountBlock();		
 	
 	difference()
 	{
