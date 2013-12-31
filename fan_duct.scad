@@ -1,42 +1,47 @@
 use <lib/polyholes.scad>
+use <lib/fans.scad>
+use <lib/jhead.scad>
+use <lib/makerfarm_parts.scad>
 
-j=0.1;
+// Various tuning parameters for the distances between components
+y1=10; // end cap centre
+y2=-10; // near-end of nozzle
+y3=-30; // near-end of Y-split
+y4=-60; // near-end of vertical part
 
-fan_mount_hole_centres=32;
-fan_mount_hole_diameter=3;
+// Thickness of the structure walls
+t=1;
 
-jhead_diameter=14;
+// Minor-radius of the duct arms
+rpipe=5;
 
-part="duct"; // all, duct
+// Size and thickness of the fan being used
+fan_size=40;
+fan_thickness=20;
 
+// roundness of the circular parts ($fn)
 detail=40;
 
-module JHead()
-{
-	color("Gold")
-	union()
-	{
-		translate([0, 0, 2]) cylinder(r=jhead_diameter/2, h=61);
-		translate([0, 0, 4+2]) cube([jhead_diameter, jhead_diameter, 8], center=true);
-		translate([0, 0, 0]) cylinder(r1=0, r2=jhead_diameter/2, h=2);
-	}
-}
+// Jitter, used to prevent coincident-surface problems. Should be less than layer-thickness.
+j=0.05;
+
+// Part to show
+part="bracket"; // all, duct, bracket
 
 
-module XCarriage()
-{
-	c=fan_mount_hole_centres;
-	d=fan_mount_hole_diameter;
+/*
 
-	color("Khaki")
-	translate([0, -13.5, 63]) 
-	difference()
-	{
-		translate([0, 15, 10]) cube([60, 30, 20], center=true);
-		translate([c/2, -j, 7]) rotate([-90, 0, 0]) polyhole(d=d, h=35);
-		translate([-c/2, -j, 7]) rotate([-90, 0, 0]) polyhole(d=d, h=35);
-	}
-}
+"duct"
+  \___AirHead();
+        \______FanDuct();
+        |______DuctVertical();
+        |        \_____________FanMountPlate();
+        |______Elbow();
+        |______DuctY();
+        |______Vent();
+        |______Vent();
+
+*/
 
 
 module FanFixture()
@@ -78,41 +83,59 @@ module CarriageFixture()
 	}
 }
 
-y1=10; // end cap centre
-y2=-10; // near-end of nozzle
-y3=-30; // near-end of Y-split
-y4=-60; // near-end of vertical part
-
-t=1;
-rpipe=5;
-
-
-
-// The duct is 30mm high
 module DuctVertical()
 {
-	union()
+	ductheight=50;
+
+	d1=ductheight-fan_thickness-2;
+	d2=d1/2;
+
+	if(d1>0)
 	{
-		difference()
+		union()
 		{
-			hull()
+			// lower, narrow part
+			difference()
 			{
-				translate([-10, 0, 30]) cube([20, 20, 10]);
-				translate([-7.5, 0, 0]) cube([15, 15, 1]);
+				hull()
+				{
+					translate([-10, 0, d2-j]) cube([20, 20, j]);
+					translate([-7.5, 0, 0]) cube([15, 15, j]);
+				}	
+
+				hull()
+				{
+					translate([-10+t, t, d2+j])  cube([20-t*2, 20-t*2, j]);
+					translate([-7.5+t, t, -j]) cube([15-t*2, 15-t*2, j]);
+				}
 			}
 
+			// upper, round part
+			difference()
+			{
+				hull()
+				{
+					translate([0, 20, d1]) cylinder(r=20, h=j, $fn=detail);
+					translate([-10, 0, d2-j]) cube([20, 20, j]);
+				}
+
+				hull()
+				{
+					translate([0, 20, d1+j]) cylinder(r=20-t, h=j, $fn=detail);
+					translate([-10+t, t, d2-j*2]) cube([20-t*2, 20-t*2, j]);
+				}				
+			}
+
+			// Overhang support
 			hull()
 			{
-				translate([-10+t, t, 30])  cube([20-t*2, 20-t*2, 10+j]);
-				translate([-7.5+t, t, -j]) cube([15-t*2, 15-t*2, 1]);
+				translate([0, t/2, d2-j]) cube([t, 20-t, j]);
+				translate([0, t/2, -j]) cube([t, 15-t, j]);
 			}
-		}
 
-		// Overhang support
-		hull()
-		{
-			translate([0, t/2, 30]) cube([t, 20-t, 10]);
-			translate([0, t/2, 0]) cube([t, 15-t, t]);
+			// Fan bracket
+			translate([0, 20, d1])
+			FanMountPlate(size=fan_size, thickness=2);
 		}
 	}
 }
@@ -243,54 +266,74 @@ module FanDuct()
 
 module AirHead()
 {
-	tpipe=1;
-	pronggap=40;
+	color("SteelBlue")
+	translate([0, 0, rpipe])
+	union()
+	{
+		// Vertical Stem
+		translate([0, y4, 5]) DuctVertical();
 
-	angle=0;
-	res=20;
+		// Elbow
+		translate([0, y4, 0]) Elbow();
+			
+		// Arms of the Y
+		translate([0, y3, 0]) DuctY();
 
+		// Vents
+		translate([-20, y2, 0]) Vent();
+		translate([20, y2, 0]) scale([-1, 1, 1]) Vent();
+	}
+}
+
+
+module Bracket()
+{
+	l=6;
+	t=3;
+	roundness=2;
 
 	color("SteelBlue")
-	translate([0, 0, rpipe+2])
-	difference() // this diff is just to pop the top off the pipework by uncommenting the big cubes at the end
+	union()
 	{
-		union()
+
+		translate([0, fan_size/2, 0])
+		FanMountPlate(size=fan_size, thickness=2);
+
+		difference()
 		{
-			translate([0, y4, 56])
-			FanFixture();
-
-			// Fan mount
-			translate([0, y4, 45])
-			FanDuct();
-			/*
-			hull()
-			{
-				translate([0, -36, 55])
-				cylinder(r=19, h=1);
-
-				translate([0, -52.5, 45-j])
-				cube([20, 20, j], center=true);
-			}
-			*/
-
-			// Vertical Stem
-			translate([0, y4, 5]) DuctVertical();
-
-			// Elbow
-			translate([0, y4, 0]) Elbow();
-			
-			// Arms of the Y
-			translate([0, y3, 0]) DuctY();
-
-			// Vents
-			translate([-20, y2, 0]) Vent();
-			translate([20, y2, 0]) scale([-1, 1, 1]) Vent();
+			translate([-fan_size/2, fan_size-10, 0]) 
+			cube([fan_size, 10+l, t]);
+	
+			translate([0, fan_size/2, 0])
+			FanMountPlateHoles(size=fan_size, thickness=t);
 		}
 
-		// These will open the pipes for inspection
-		//translate([-100, -100, 0]) cube([200, 200, 200]);
-		//translate([-200, -100, 0]) cube([200, 200, 200]);
+		translate([-fan_size/2, fan_size+l-t, 0])
+		difference()
+		{
+			hull()
+			{
+				cube([fan_size, t, j]);
+				translate([roundness, 0, 13-roundness]) rotate([270, 0, 0]) cylinder(r=roundness, h=t, $fn=detail);
+				translate([fan_size-roundness, 0, 13-roundness]) rotate([270, 0, 0]) cylinder(r=roundness, h=t, $fn=detail);
+			}
 
+			// Backplate holes
+			translate([fan_size/2-16, -j, 8]) rotate([270, 0, 0]) cylinder(r=1.5, h=t+j*2, $fn=detail);
+			translate([fan_size/2+16, -j, 8]) rotate([270, 0, 0]) cylinder(r=1.5, h=t+j*2, $fn=detail);
+		}
+
+		// Reinforcement
+		translate([0, fan_size-2, t])
+		difference()
+		{
+			translate([-fan_size/4, 0, 0])
+			cube([fan_size/2, l, 8]);
+
+			translate([0, -j, (l-1)*1.5])
+			rotate([0, 90, 0])
+			cylinder(r=l-1, h=fan_size+j*2, center=true, $fn=3);
+		}
 	}
 }
 
@@ -298,14 +341,18 @@ module AirHead()
 if(part == "all")
 {
 	%JHead();
+	
+	translate([0, -13.5, 63]) 
 	%XCarriage();
-	AirHead();
+	
+	translate([0, -40, 42])
+	%Fan(fan_size, fan_thickness);
 
-	translate([0, -13.5-2, 63])
-	union()
-	{
-		//CarriageFixture();
-	}
+	translate([0, 0, 2])
+	AirHead();
+	
+	translate([0, y4, 40+fan_thickness+2])
+	Bracket();
 }
 
 if(part == "duct")
@@ -313,4 +360,10 @@ if(part == "duct")
 	translate([0, 0, 60])
 	rotate([90, 0, 0])
 	AirHead();
+}
+
+if(part == "bracket")
+{
+	translate([0, -fan_size/2, 0])
+	Bracket();
 }
