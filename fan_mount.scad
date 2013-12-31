@@ -9,6 +9,7 @@ jhead_diameter=14;
 
 part="duct"; // all, duct
 
+detail=40;
 
 module JHead()
 {
@@ -20,6 +21,7 @@ module JHead()
 		translate([0, 0, 0]) cylinder(r1=0, r2=jhead_diameter/2, h=2);
 	}
 }
+
 
 module XCarriage()
 {
@@ -47,7 +49,7 @@ module FanFixture()
 		cube([40, 40, 2]);
 
 		// main hole
-		translate([20, 20, -j]) cylinder(r=18, h=3+j*2);
+		translate([20, 20, -j]) cylinder(r=18, h=3+j*2, $fn=detail);
 
 		// screw holes
 		translate([3, 3, -j]) polyhole(d=3, h=3+j*2);
@@ -124,7 +126,7 @@ module Elbow()
 		cube([15, 15, 10]);
 		translate([t, t, 5]) cube([15-t*2, 15-t*2, 10]);
 		translate([t, 7.5, t]) cube([15-t*2, 15, 10-t*2]);
-		translate([t, 7.5, 7.5]) rotate([0, 90, 0]) cylinder(r=7.5-t, h=15-t*2);
+		translate([t, 7.5, 7.5]) rotate([0, 90, 0]) cylinder(r=7.5-t, h=15-t*2, $fn=detail);
 	}
 }
 
@@ -139,7 +141,7 @@ module DuctRoot()
 			cube([15, j, 10]);
 				
 			translate([0, 0, 0]) scale([1.5, 1.5, 1]) 
-			sphere(r=rpipe, $fn=20);
+			sphere(r=rpipe, $fn=detail);
 		}
 
 		hull()
@@ -148,10 +150,10 @@ module DuctRoot()
 			cube([15-t*2, j, 10-t*2]);
 				
 			translate([0, 0, 0]) scale([1.5, 1.5, 1]) 
-			sphere(r=rpipe-t, $fn=20);
+			sphere(r=rpipe-t, $fn=detail);
 		}
 
-		rotate([90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=25, center=true);
+		rotate([90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=25, center=true, $fn=detail);
 	}
 }
 
@@ -162,17 +164,17 @@ module DuctV()
 	{
 		hull()
 		{
-			translate([0, 0, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=20);
-			translate([-20, y2-y3, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=20);
+			translate([0, 0, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=detail);
+			translate([-20, y2-y3, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=detail);
 		}
 		hull()
 		{
-			translate([0, 0, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=20);
-			translate([-20, y2-y3, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=20);
+			translate([0, 0, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=detail);
+			translate([-20, y2-y3, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=detail);
 		}
 		
-		rotate([90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4);
-		translate([-20, y2-y3, 0]) rotate([-90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4);
+		rotate([90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4, $fn=detail);
+		translate([-20, y2-y3, 0]) rotate([-90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4, $fn=detail);
 	}
 }
 
@@ -201,15 +203,15 @@ module Vent()
 	{
 		hull()
 		{
-			scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=20);
-			translate([0, y1-y2, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=20);
+			scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=detail);
+			translate([0, y1-y2, 0]) scale([1.5, 1, 1]) sphere(r=rpipe, $fn=detail);
 		}
 		hull()
 		{
-			scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=20);
-			translate([0, y1-y2, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=20);
+			scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=detail);
+			translate([0, y1-y2, 0]) scale([1.5, 1, 1]) sphere(r=rpipe-t, $fn=detail);
 		}
-		rotate([90, 0, 45]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4);
+		rotate([90, 0, 45]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4, $fn=detail);
 
 		// vent
 		rotate([0, 40, 0]) translate([0, 4, -t]) cube([rpipe*1.6, y1-y2-7, t*2]);
@@ -226,13 +228,13 @@ module FanDuct()
 	{
 		hull()
 		{
-			translate([0, 19, 12]) cylinder(r=19, h=t);
+			translate([0, 19, 12]) cylinder(r=19, h=t, $fn=detail);
 			translate([-10, 0, 0]) cube([20, 20, t]);
 		}
 
 		hull()
 		{
-			translate([0, 19, 12+t/2]) cylinder(r=19-t, h=t);
+			translate([0, 19, 12+t/2]) cylinder(r=19-t, h=t, $fn=detail);
 			translate([-10+t, t, -j]) cube([20-t*2, 20-t*2, t]);
 		}
 	}
