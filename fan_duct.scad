@@ -3,6 +3,9 @@ use <lib/fans.scad>
 use <lib/jhead.scad>
 use <lib/makerfarm_parts.scad>
 
+// Distance from mounting-holes to Z-zero
+ZPrime=62;
+
 // Various tuning parameters for the distances between components
 y1=10; // end cap centre
 y2=-10; // near-end of nozzle
@@ -26,21 +29,24 @@ detail=40;
 j=0.05;
 
 // Part to show
-part="duct"; // all, duct, bracket
+part="all"; // all, duct, bracket
 
 
 /*
 
 "duct"
   \___AirHead();
-        \______FanDuct();
-        |______DuctVertical();
-        |        \_____________FanMountPlate();
-        |______Elbow();
-        |______DuctY();
-        |______Vent();
-        |______Vent();
+        \___FanDuct();
+        |___DuctVertical();
+        |     \___FanMountPlate();
+        |___Elbow();
+        |___DuctY();
+        |___Vent();
+        |___Vent();
 
+"bracket"
+  \___FanMountPlate();
+  |___FanMountPlateHoles();
 */
 
 
@@ -85,9 +91,9 @@ module CarriageFixture()
 
 module DuctVertical()
 {
-	ductheight=50;
+	ductheight=42;
 
-	d1=ductheight-fan_thickness-2;
+	d1=ductheight-fan_thickness-4;
 	d2=d1/2;
 
 	if(d1>0)
@@ -115,13 +121,13 @@ module DuctVertical()
 			{
 				hull()
 				{
-					translate([0, 20, d1]) cylinder(r=20, h=j, $fn=detail);
+					translate([0, fan_size/2, d1]) cylinder(r=fan_size/2.2, h=j, $fn=detail);
 					translate([-10, 0, d2-j]) cube([20, 20, j]);
 				}
 
 				hull()
 				{
-					translate([0, 20, d1+j]) cylinder(r=20-t, h=j, $fn=detail);
+					translate([0, fan_size/2, d1+j]) cylinder(r=fan_size/2.2-t, h=j, $fn=detail);
 					translate([-10+t, t, d2-j*2]) cube([20-t*2, 20-t*2, j]);
 				}				
 			}
@@ -135,7 +141,8 @@ module DuctVertical()
 
 			// Fan bracket
 			translate([0, 20, d1])
-			FanMountPlate(size=fan_size, thickness=2);
+			FanMountPlate(size=fan_size, thickness=4, traps=true);
+
 		}
 	}
 }
@@ -195,7 +202,11 @@ module DuctV()
 			translate([0, 0, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=detail);
 			translate([-20, y2-y3, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=detail);
 		}
-		
+
+		// Vent
+		rotate([0, 40, 45]) translate([0, 8, -t]) cube([rpipe*1.6, y1-y2-5, t*2]);
+
+		// Hole to join to next parts
 		rotate([90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4, $fn=detail);
 		translate([-20, y2-y3, 0]) rotate([-90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4, $fn=detail);
 	}
@@ -249,26 +260,6 @@ module Vent()
 
 		// Remove top for debugging
 		//translate([-100, -100, 0]) cube([200, 200, 200]);
-	}
-}
-
-
-
-module FanDuct()
-{
-	difference()
-	{
-		hull()
-		{
-			translate([0, 19, 12]) cylinder(r=19, h=t, $fn=detail);
-			translate([-10, 0, 0]) cube([20, 20, t]);
-		}
-
-		hull()
-		{
-			translate([0, 19, 12+t/2]) cylinder(r=19-t, h=t, $fn=detail);
-			translate([-10+t, t, -j]) cube([20-t*2, 20-t*2, t]);
-		}
 	}
 }
 
@@ -351,17 +342,17 @@ if(part == "all")
 {
 	%JHead();
 	
-	translate([0, -13.5, 63]) 
+	translate([0, -13.5, ZPrime-7]) // 7 is the distance from the bottom of the block to the centre of the holes
 	%XCarriage();
 	
-	translate([0, -40, 42])
+	translate([0, y4, 32+fan_thickness+2])
+	Bracket();
+
+	translate([0, -40, 34])
 	%Fan(fan_size, fan_thickness);
 
 	translate([0, 0, 2])
 	AirHead();
-	
-	translate([0, y4, 40+fan_thickness+2])
-	Bracket();
 }
 
 if(part == "duct")
