@@ -26,7 +26,7 @@ detail=40;
 j=0.05;
 
 // Part to show
-part="bracket"; // all, duct, bracket
+part="duct"; // all, duct, bracket
 
 
 /*
@@ -205,16 +205,19 @@ module DuctV()
 module DuctY()
 {
 	difference()
-	{	
+	{
 		union()
 		{
 			DuctRoot();
 			DuctV();
 			scale([-1, 1, 1]) DuctV();
 		}
+
+		// Hole to join to next part
 		rotate([90, 0, -135]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4);
 		rotate([90, 0, 135]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4);
 
+		// Remove top for debugging
 		// translate([-100, -100, 0]) cube([200, 200, 200]);
 	}
 }
@@ -224,21 +227,27 @@ module Vent()
 {
 	difference()
 	{
+		// Outer surface
 		hull()
 		{
 			scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=detail);
 			translate([0, y1-y2, 0]) scale([1.5, 1, 1]) sphere(r=rpipe, $fn=detail);
 		}
+
+		// Inner surface
 		hull()
 		{
 			scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=detail);
 			translate([0, y1-y2, 0]) scale([1.5, 1, 1]) sphere(r=rpipe-t, $fn=detail);
 		}
+
+		// Hole to join to next part
 		rotate([90, 0, 45]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4, $fn=detail);
 
-		// vent
+		// Vent
 		rotate([0, 40, 0]) translate([0, 4, -t]) cube([rpipe*1.6, y1-y2-7, t*2]);
 
+		// Remove top for debugging
 		//translate([-100, -100, 0]) cube([200, 200, 200]);
 	}
 }
