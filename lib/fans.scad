@@ -1,4 +1,4 @@
-use <MCAD/nuts_and_bolts.scad>
+use <nuts_and_bolts.scad>
 
 j=0.1;
 
