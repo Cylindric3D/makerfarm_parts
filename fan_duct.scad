@@ -12,18 +12,22 @@ y2=-10; // near-end of nozzle
 y3=-30; // near-end of Y-split
 y4=-60; // near-end of vertical part
 
+// radius around the hot-end
+r_vent=25;
+
+
 // Thickness of the structure walls
 t=1;
 
 // Minor-radius of the duct arms
-rpipe=5;
+rpipe=10;
 
 // Size and thickness of the fan being used
 fan_size=40;
 fan_thickness=20;
 
 // roundness of the circular parts ($fn)
-detail=40;
+detail=20;
 
 // Jitter, used to prevent coincident-surface problems. Should be less than layer-thickness.
 j=0.05;
@@ -31,13 +35,16 @@ j=0.05;
 // Part to show
 part="all"; // all, duct, bracket
 
+// Bunny Ears?
+bunny_ears=true;
+
 
 /*
 
 "duct"
   \___AirHead();
         \___FanDuct();
-        |___DuctVertical();
+        |___Ductertical();
         |     \___FanMountPlate();
         |___Elbow();
         |___DuctY();
@@ -89,7 +96,7 @@ module CarriageFixture()
 	}
 }
 
-module DuctVertical()
+module Ductertical()
 {
 	ductheight=42;
 
@@ -100,79 +107,72 @@ module DuctVertical()
 	{
 		union()
 		{
-			// lower, narrow part
-			difference()
-			{
-				hull()
-				{
-					translate([-10, 0, d2-j]) cube([20, 20, j]);
-					translate([-7.5, 0, 0]) cube([15, 15, j]);
-				}	
-
-				hull()
-				{
-					translate([-10+t, t, d2+j])  cube([20-t*2, 20-t*2, j]);
-					translate([-7.5+t, t, -j]) cube([15-t*2, 15-t*2, j]);
-				}
-			}
+			// Fan bracket
+			translate([0, 20, d1])
+			FanMountPlate(size=fan_size, thickness=4, traps=true);
 
 			// upper, round part
 			difference()
 			{
 				hull()
 				{
-					translate([0, fan_size/2, d1]) cylinder(r=fan_size/2.2, h=j, $fn=detail);
-					translate([-10, 0, d2-j]) cube([20, 20, j]);
+					translate([0, fan_size/2, d1]) cylinder(r=fan_size/2.2+t, h=j, $fn=detail);
+					translate([0, fan_size/2, d2-j]) cylinder(r=rpipe*2, h=j, $fn=detail);
+
 				}
 
 				hull()
 				{
-					translate([0, fan_size/2, d1+j]) cylinder(r=fan_size/2.2-t, h=j, $fn=detail);
-					translate([-10+t, t, d2-j*2]) cube([20-t*2, 20-t*2, j]);
+					translate([0, fan_size/2, d1+j]) cylinder(r=fan_size/2.2, h=j, $fn=detail);
+					translate([0, fan_size/2, d2-j*2]) cylinder(r=rpipe*2-t, h=j, $fn=detail);
 				}				
 			}
 
+			// lower, narrow part
+			difference()
+			{
+				hull()
+				{
+					translate([0, fan_size/2, d2]) cylinder(r=rpipe*2, h=j, $fn=detail);
+					//translate([0, fan_size/2, 0]) cylinder(r=rpipe*2, h=j, $fn=detail);
+					translate([-7.5, fan_size/2-7.5, 0]) cube([15, 15, j]);
+				}	
+
+				hull()
+				{
+					translate([0, fan_size/2, d2+j]) cylinder(r=rpipe*2-t, h=j, $fn=detail);
+					//translate([0, fan_size/2, -j]) cylinder(r=rpipe*2-t, h=j, $fn=detail);
+					translate([-7.5+t, fan_size/2-7.5+t, -j]) cube([15-t*2, 15-t*2, j]);
+				}
+			}
+
 			// Overhang support
-			hull()
+/* 			hull()
 			{
 				translate([0, t/2, d2-j]) cube([t, 20-t, j]);
 				translate([0, t/2, -j]) cube([t, 15-t, j]);
-			}
+			} */
 
-			// Fan bracket
-			translate([0, 20, d1])
-			FanMountPlate(size=fan_size, thickness=4, traps=true);
 
 		}
-	}
-}
-
-
-module Elbow()
-{
-	translate([-7.5, 0, -rpipe])
-	difference()
-	{
-		cube([15, 15, 10]);
-		translate([t, t, 5]) cube([15-t*2, 15-t*2, 10]);
-		translate([t, 7.5, t]) cube([15-t*2, 15, 10-t*2]);
-		translate([t, 7.5, 7.5]) rotate([0, 90, 0]) cylinder(r=7.5-t, h=15-t*2, $fn=detail);
 	}
 }
 
 
 module DuctRoot()
 {
-	difference()
+/* 	difference()
 	{
 		hull()
 		{
-			translate([-7.5, y4-y3+15, -5])
+			translate([-7.5, -8, -5])
 			cube([15, j, 10]);
 				
 			translate([0, 0, 0]) scale([1.5, 1.5, 1]) 
 			sphere(r=rpipe, $fn=detail);
 		}
+		
+		translate([-rpipe*2, 0, -rpipe*2]) cube([rpipe*4, rpipe*2, rpipe*4]);
 
 		hull()
 		{
@@ -184,52 +184,74 @@ module DuctRoot()
 		}
 
 		rotate([90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=25, center=true, $fn=detail);
-	}
+	} */
 }
 
 
-module DuctV()
+module Duct()
 {
+	r = r_vent+rpipe;
+	nodes = 8;
+	angle = (360/nodes);
+	len = (r * sin(angle/2))*2;
+	
+	nozzles_per_side = 2;
+	angle2 = (360/(nozzles_per_side*nodes));
+	len2 = rpipe/3;
+	
+	translate([0, r-rpipe/2, 0])
 	difference()
 	{
-		hull()
-		{
-			translate([0, 0, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=detail);
-			translate([-20, y2-y3, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=detail);
-		}
-		hull()
-		{
-			translate([0, 0, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=detail);
-			translate([-20, y2-y3, 0]) scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=detail);
-		}
 
-		// Vent
-		rotate([0, 40, 45]) translate([0, 8, -t]) cube([rpipe*1.6, y1-y2-5, t*2]);
-
-		// Hole to join to next parts
-		rotate([90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4, $fn=detail);
-		translate([-20, y2-y3, 0]) rotate([-90, 0, 0]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4, $fn=detail);
-	}
-}
-
-
-module DuctY()
-{
-	difference()
-	{
+		//translate([0, y2-y3, 0])
+		rotate([0, 0, -90])
 		union()
 		{
-			DuctRoot();
-			DuctV();
-			scale([-1, 1, 1]) DuctV();
+			for(i = [0:nodes])
+			{
+				rotate([0, 0, angle*i])
+				translate([r, 0, 0])
+				union()
+				{
+					rotate([-90, 0, angle/2]) cylinder(r=rpipe, h=len);
+					sphere(r=rpipe);
+				}
+			}
 		}
 
-		// Hole to join to next part
-		rotate([90, 0, -135]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4);
-		rotate([90, 0, 135]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4);
+		//translate([0, y2-y3, 0])
+		rotate([0, 0, -90])
+		union()
+		{
+			for(i = [0:nodes])
+			{
+				rotate([0, 0, angle*i])
+				translate([r, 0, 0])
+				union()
+				{
+					rotate([-90, 0, angle/2]) cylinder(r=rpipe-t, h=len);
+					sphere(r=rpipe-t);
+				}
+			}
+		}
 
-		// Remove top for debugging
-		// translate([-100, -100, 0]) cube([200, 200, 200]);
+		// Vent holes
+		rotate([0, 0, -90])
+		union()
+		{
+			for(i = [0:(nodes*nozzles_per_side)])
+			{
+				translate([0, 0, -rpipe*3.5])
+				rotate([-45, 0, (angle2/2)+angle2*i]) cylinder(r=len2, h=r*1.3);
+			}
+		}
+
+		// Hole to join to next parts
+		translate([0, -r, 0]) 
+		rotate([90, 0, 0]) 
+		scale([1.5, 1, 1])
+		cylinder(r=rpipe-t, h=rpipe*4, $fn=detail);
+ 
 	}
 }
 
@@ -238,30 +260,18 @@ module Vent()
 {
 	difference()
 	{
-		// Outer surface
-		hull()
+		union()
 		{
-			scale([1.5, 1.5, 1]) sphere(r=rpipe, $fn=detail);
-			translate([0, y1-y2, 0]) scale([1.5, 1, 1]) sphere(r=rpipe, $fn=detail);
+			DuctRoot();
+			Duct();
 		}
-
-		// Inner surface
-		hull()
-		{
-			scale([1.5, 1.5, 1]) sphere(r=rpipe-t, $fn=detail);
-			translate([0, y1-y2, 0]) scale([1.5, 1, 1]) sphere(r=rpipe-t, $fn=detail);
-		}
-
-		// Hole to join to next part
-		rotate([90, 0, 45]) scale([1.5, 1, 1]) cylinder(r=5-t, h=rpipe*4, $fn=detail);
-
-		// Vent
-		rotate([0, 40, 0]) translate([0, 4, -t]) cube([rpipe*1.6, y1-y2-7, t*2]);
 
 		// Remove top for debugging
 		//translate([-100, -100, 0]) cube([200, 200, 200]);
 	}
 }
+
+
 
 
 module AirHead()
@@ -271,17 +281,10 @@ module AirHead()
 	union()
 	{
 		// Vertical Stem
-		translate([0, y4, 5]) DuctVertical();
-
-		// Elbow
-		translate([0, y4, 0]) Elbow();
-			
-		// Arms of the Y
-		translate([0, y3, 0]) DuctY();
+		translate([0, y4, 5]) Ductertical();
 
 		// Vents
-		translate([-20, y2, 0]) Vent();
-		translate([20, y2, 0]) scale([-1, 1, 1]) Vent();
+		translate([0, y3, 0]) Vent();
 	}
 }
 
@@ -353,6 +356,11 @@ if(part == "all")
 
 	translate([0, 0, 2])
 	AirHead();
+	
+	translate([0, y1, -30]) color("red") cylinder(r1=4, r2=0, h=30);
+	translate([0, y2, -30]) color("green") cylinder(r1=4, r2=0, h=30);
+	translate([0, y3, -30]) color("blue") cylinder(r1=4, r2=0, h=30);
+	translate([0, y4, -30]) color("yellow") cylinder(r1=4, r2=0, h=30);
 }
 
 if(part == "duct")
@@ -360,6 +368,12 @@ if(part == "duct")
 	translate([0, 0, 60])
 	rotate([90, 0, 0])
 	AirHead();
+	
+	if(bunny_ears)
+	{
+		translate([0, -10, 0])
+		cylinder(r=40, h=j);
+	}
 }
 
 if(part == "bracket")
