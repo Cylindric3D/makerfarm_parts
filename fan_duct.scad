@@ -118,7 +118,7 @@ module AirHead()
 	holes=14;
 	
 	
-	union()
+	!union()
 	{
 		// Top is the fan-mounting plate
 		translate([0, -40, 22])
@@ -131,6 +131,9 @@ module AirHead()
 				translate([-10, 10, t]) cube([20, 20, 10-t*2]);
 			}
 
+			// Bridge support
+			translate([-t/2, 16, t]) cube([t, 5, 10-t*2]);
+			
 			// Bridge support
 			difference()
 			{
@@ -180,11 +183,12 @@ module AirHead()
 				}
 			}
 
-			///*DEBUG*/translate([0, 0, 9]) cylinder(r=1000, h=1000, $fn=detail);
+			///*DEBUG*/translate([0, 0, 27]) cylinder(r=1000, h=1000, $fn=detail);
 		}
 
+		
+		// Bridging supports near holes
 		translate([0, 0, 3+t*3])
-		//rotate([0, 0, 0.5*(360/holes)])
 		for(h = [0:holes-1])
 		{
 			rotate([0, 0, h*(360/holes)])
