@@ -29,6 +29,9 @@ j=0.05;
 // Part to show
 part="duct"; // all, duct, bracket
 
+// Debugging slices
+debug_slice=0;
+debug_layer_height=1;
 
 module FanFixture()
 {
@@ -127,7 +130,17 @@ module AirHead()
 				translate([0, 0, t]) cylinder(r=16, h=10+j*2);
 				translate([-10, 10, t]) cube([20, 20, 10-t*2]);
 			}
-			
+
+			// Bridge support
+			difference()
+			{
+				cylinder(r=10, h=10);
+
+				translate([0, 0, 10-t])
+				rotate_extrude(convexity = 10, $fn=detail)
+				translate([15, 0, 0])
+				circle(r = 10, $fn=detail);			
+			}
 		}
 
 		translate([0, 0, 3]) 
@@ -167,7 +180,19 @@ module AirHead()
 				}
 			}
 
-			///*DEBUG*/translate([0, 0, 5]) cylinder(r=1000, h=1000, $fn=detail);
+			///*DEBUG*/translate([0, 0, 9]) cylinder(r=1000, h=1000, $fn=detail);
+		}
+
+		translate([0, 0, 3+t*3])
+		//rotate([0, 0, 0.5*(360/holes)])
+		for(h = [0:holes-1])
+		{
+			rotate([0, 0, h*(360/holes)])
+			difference()
+			{
+				translate([rminor+t/2, -t/2, 1]) cube([(rmajor-rminor-t)/3, t, 4]);
+				translate([rmajor-(rmajor-rminor)/2, 0, t*5]) rotate([90, 0, 0]) cylinder(r=(rmajor-rminor)/2-t/2, h=t*2, center=true, $fn=detail);
+			}
 		}
 	}
 }
@@ -250,10 +275,18 @@ if(part == "all")
 
 if(part == "duct")
 {
-	translate([0, 0, 32])
-	rotate([180, 0, 0])
-	AirHead();
+	difference()
+	{
+		translate([0, 0, 32])
+		rotate([180, 0, 0])
+		AirHead();
 
+		///*DEBUG*/translate([0, 0, 1]) cylinder(r=1000, h=1000, $fn=detail);
+		if(debug_slice>0)
+		{
+			translate([0, 0, debug_slice*debug_layer_height]) cylinder(r=1000, h=1000, $fn=detail);
+		}
+	}
 }
 
 if(part == "bracket")
