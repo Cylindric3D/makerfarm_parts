@@ -118,7 +118,7 @@ module AirHead()
 	holes=14;
 	
 	
-	!union()
+	union()
 	{
 		// Top is the fan-mounting plate
 		translate([0, -40, 22])
