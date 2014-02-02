@@ -149,20 +149,32 @@ module AirHead()
 		translate([0, 0, 3]) 
 		difference()
 		{
+		
 			union()
 			{
-				cylinder(r=rmajor, h=hmain, $fn=detail);
-				translate([-20, -20, hmain-10]) cube([40, 20, 10]);
-			}
-			translate([0, 0, -j]) cylinder(r=rminor, h=hmain+j*2, $fn=detail);
+				difference()
+				{
+			
+					union()
+					{
+						cylinder(r=rmajor, h=hmain, $fn=detail);
+						translate([-20, -20, hmain-10]) cube([40, 20, 10]);
+					}
+					translate([0, 0, -j]) cylinder(r=rminor, h=hmain+j*2, $fn=detail);
 
-			// Hollow out the main cylinder
-			difference()
-			{
-				translate([0, 0, t*4]) cylinder(r=rmajor-t, h=hmain-t*5, $fn=detail);
-				translate([0, 0, -j]) cylinder(r=rminor+t, h=hmain+j*2, $fn=detail);
-			}
+					// Hollow out the main cylinder
+					difference()
+					{
+						translate([0, 0, t*4]) cylinder(r=rmajor-t, h=hmain-t*5, $fn=detail);
+						translate([0, 0, -j]) cylinder(r=rminor+t, h=hmain+j*2, $fn=detail);
+					}
+				}
 
+				// Bridging supports near holes
+				translate([0, 0, 3+t])
+				TorusChamfer(rminor+t, rmajor-t);
+			}
+			
 			// Top hole for main air inlet
 			difference()
 			{
@@ -183,24 +195,35 @@ module AirHead()
 				}
 			}
 
-			///*DEBUG*/translate([0, 0, 27]) cylinder(r=1000, h=1000, $fn=detail);
+			///*DEBUG*/translate([0, 0, 12]) cylinder(r=1000, h=1000, $fn=detail);
 		}
 
-		
-		// Bridging supports near holes
-		translate([0, 0, 3+t*3])
-		for(h = [0:holes-1])
-		{
-			rotate([0, 0, h*(360/holes)])
-			difference()
-			{
-				translate([rminor+t/2, -t/2, 1]) cube([(rmajor-rminor-t)/3, t, 4]);
-				translate([rmajor-(rmajor-rminor)/2, 0, t*5]) rotate([90, 0, 0]) cylinder(r=(rmajor-rminor)/2-t/2, h=t*2, center=true, $fn=detail);
-			}
-		}
 	}
 }
 
+
+// r1 is the inner radius
+// r2 is the outer radius
+module TorusChamfer(r1, r2)
+{
+	xsection=(r2-r1);
+	centre=r1+xsection;
+	
+	//#cylinder(r=r1, h=1000);
+	//#rotate([180, 0, 0]) cylinder(r=r2, h=1000);
+	
+	difference()
+	{
+		cylinder(r=r2, h=xsection);
+
+		cylinder(r=r1, h=xsection*2+j*2, center=true);
+		
+		translate([0, 0, xsection])
+		rotate_extrude(convexity = 10, $fn=detail)
+		translate([r2, 0, 0])
+		circle(r = xsection, $fn=detail);
+	}
+}
 
 module Bracket()
 {
@@ -285,7 +308,8 @@ if(part == "duct")
 		rotate([180, 0, 0])
 		AirHead();
 
-		///*DEBUG*/translate([0, 0, 1]) cylinder(r=1000, h=1000, $fn=detail);
+		///*DEBUG Horizontal Slice*/translate([0, 0, 1]) cylinder(r=1000, h=1000, $fn=detail);
+		///*DEBUG Vertical Slice*/translate([0, 0, 0]) rotate([0, 90, 0]) cylinder(r=1000, h=1000, $fn=detail);
 		if(debug_slice>0)
 		{
 			translate([0, 0, debug_slice*debug_layer_height]) cylinder(r=1000, h=1000, $fn=detail);
