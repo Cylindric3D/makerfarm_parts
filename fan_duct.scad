@@ -26,8 +26,12 @@ detail=40;
 // Jitter, used to prevent coincident-surface problems. Should be less than layer-thickness.
 j=0.05;
 
+airhead_height=29;
+
+gasket_thickness=0.3;
+
 // Part to show
-part="duct"; // all, duct, bracket
+part="duct"; // all, duct, bracket, gasket
 
 // Debugging slices
 debug_slice=0;
@@ -112,21 +116,27 @@ module AirHead()
 	//p = [[0,-10,0], [0,0,0], [0,10,0], [0,20,20], [0,30,40]];
 	
 	//Hose(p, rpipe, 0.2);
-	hmain=29;
-	rmajor=20;
-	rminor=12;
-	holes=14;
-	
+	hmain=airhead_height;
+	rmajor=23;
+	rminor=15;
+	holes=20;
 	
 	union()
 	{
 		// Top is the fan-mounting plate
-		translate([0, -40, 22])
+		translate([0, -40, 19])
 		union()
 		{
+			// The square block that joins to the fan
 			difference()
 			{
 				FanMountPlate(size=40, thickness=10, traps=true, roundback=false, bighole=false);
+
+				// Make the fan mount holes deeper
+				translate([0, 0, 2]) FanMountPlateHoles(size=40, thickness=10, traps=true, bighole=false);
+				translate([0, 0, 4]) FanMountPlateHoles(size=40, thickness=10, traps=true, bighole=false);
+				translate([0, 0, 6]) FanMountPlateHoles(size=40, thickness=10, traps=true, bighole=false);
+
 				translate([0, 0, t]) cylinder(r=16, h=10+j*2);
 				translate([-10, 10, t]) cube([20, 20, 10-t*2]);
 			}
@@ -146,7 +156,6 @@ module AirHead()
 			}
 		}
 
-		translate([0, 0, 3]) 
 		difference()
 		{
 		
@@ -154,7 +163,6 @@ module AirHead()
 			{
 				difference()
 				{
-			
 					union()
 					{
 						cylinder(r=rmajor, h=hmain, $fn=detail);
@@ -225,6 +233,11 @@ module TorusChamfer(r1, r2)
 	}
 }
 
+module Gasket()
+{
+	color("black") FanMountPlate(size=fan_size, thickness=gasket_thickness);
+}
+
 module Bracket()
 {
 	l=6;
@@ -279,24 +292,31 @@ module Bracket()
 
 if(part == "all")
 {
-	translate([0, 0, -2])
-	union()
-	{
-		%JHead();
+		JHead();
 	
 		translate([0, -13.5, ZPrime-7]) // 7 is the distance from the bottom of the block to the centre of the holes
 		%XCarriage();
 
-		translate([0, -60, 32+fan_thickness+2])
+	// The complete airhead rig
+	translate([0, 0, ZPrime-7])
+	union()
+	{
+		translate([0, -60, 0])
 		Bracket();
 
-		translate([0, -40, 34])
+		translate([0, -40, -gasket_thickness])
+		Gasket();
+
+		translate([0, -40, -gasket_thickness-fan_thickness])
 		%Fan(fan_size, fan_thickness);
+		
+		translate([0, -40, -gasket_thickness-fan_thickness-gasket_thickness])
+		Gasket();
+
+		translate([0, 0, -gasket_thickness-fan_thickness-gasket_thickness-airhead_height])
+		AirHead();
 	}
 	
-
-	translate([0, 0, 0])
-	AirHead();
 
 }
 
@@ -308,7 +328,7 @@ if(part == "duct")
 		rotate([180, 0, 0])
 		AirHead();
 
-		///*DEBUG Horizontal Slice*/translate([0, 0, 1]) cylinder(r=1000, h=1000, $fn=detail);
+		///*DEBUG Horizontal Slice*/translate([0, 0, 5]) cylinder(r=1000, h=1000, $fn=detail);
 		///*DEBUG Vertical Slice*/translate([0, 0, 0]) rotate([0, 90, 0]) cylinder(r=1000, h=1000, $fn=detail);
 		if(debug_slice>0)
 		{
@@ -321,4 +341,9 @@ if(part == "bracket")
 {
 	translate([0, -fan_size/2, 0])
 	Bracket();
+}
+
+if(part == "gasket")
+{
+	Gasket();
 }
