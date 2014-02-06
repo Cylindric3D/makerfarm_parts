@@ -94,11 +94,11 @@ function FanToBracketTranslation(fan_size, angle) = [0,-fan_size/2-bracket_thick
 bracket_thickness=3;
 
 
-module Bracket(fan_size=40, angle=0)
+module Bracket(fan_size=40, angle=0, height=13)
 {
 	l=6;
 	roundness=2;
-	h1=13; // vertical height of the carriage-bracket
+	h1=height; // vertical height of the carriage-bracket
 
 	color("SteelBlue")
 	union()
