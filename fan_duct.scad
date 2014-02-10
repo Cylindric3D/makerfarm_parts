@@ -38,7 +38,7 @@ jet_count=16;
 jet_size=5;
 
 // Part to show
-part="gasket"; // all, duct, bracket, gasket
+part="all"; // all, duct, bracket, gasket
 
 // Debugging slices
 debug_slice=0;
