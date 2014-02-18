@@ -12,7 +12,7 @@ r_vent=25;
 
 
 // Thickness of the structure walls
-t=1;
+t=2;
 
 // Minor-radius of the duct arms
 rpipe=5;
@@ -34,11 +34,8 @@ gasket_thickness=0.3;
 bracket_thickness=3;
 bracket_angle=45;
 
-jet_count=16;
-jet_size=5;
-
 // Part to show
-part="all"; // all, duct, bracket, gasket
+part="bracket"; // all, duct, bracket, gasket
 
 // Debugging slices
 debug_slice=0;
@@ -47,75 +44,90 @@ debug_layer_height=1;
 
 module AirHead()
 {
-	torus_sides=8;
-	torus_facets=6;
+	distance_from_head=10;
+	distance_from_ground=2;
+	nozzle_width=20;
+	nozzle_height=10;
+	corners=2;
+	
+	w1=nozzle_width;
+	h1=nozzle_height;
+	w2=nozzle_width-t*2;
+	h2=nozzle_height-t*2;
 	
 	color("maroon")
+	translate([0, -20, 0])
 	difference()
 	{
 		union()
 		{
-			translate([0, -43.5, 0])
-			rotate([bracket_angle, 0, 0]) 
-			translate([0, fan_size/2, 0])
-			union()
+			// bracket-end
+			translate([0, -9, 13])
+			rotate([bracket_angle, 0, 0])
+			FanMountPlate(size=fan_size, thickness=bracket_thickness, traps=true);
+			
+			hull()
 			{
-				FanMountPlate(size=fan_size, thickness=t*2, traps=true);
-				
-				translate([0,0,-15])
-				cylinder(r1=fan_size/5, r2=fan_size/2, h=15+t);
+				// Conic part
+				translate([0, -9, 13])
+				rotate([bracket_angle, 0, 0])
+				cylinder(r=fan_size/2, h=j, $fn=detail);
+
+				// Nozzle
+				translate([0, 8-distance_from_head, -10+nozzle_height/2+distance_from_ground])
+				rotate([55, 0, 0])
+				hull()
+				{
+					translate([-w1/2+corners, h1/2-corners, 0]) sphere(r=corners, h=5, $fn=detail);
+					translate([ w1/2-corners, h1/2-corners, 0]) sphere(r=corners, h=5, $fn=detail);
+					translate([w1/2-corners, -h1/2+corners, 0]) sphere(r=corners, h=5, $fn=detail);
+					translate([-w1/2+corners, -h1/2+corners, 0]) sphere(r=corners, h=5, $fn=detail);
+				}
 			}
 
-			// main ring
-			translate([0, 0, 8.5])
-			torus2(30, 40, sides=torus_sides, facets=torus_facets);
-
 		}
-		
-		// hollow out the ball-joint
-		intersection()
+
+		// Remove the conic part
+		hull()
 		{
-			translate([0, -43.5, 0])
-			rotate([bracket_angle, 0, 0]) 
-			translate([0, fan_size/2, -15+t])
-			union()
+			translate([0, -9, 13])
+			rotate([bracket_angle, 0, 0])
+			cylinder(r=fan_size/2-t, h=j*2);
+		
+			// Nozzle
+			translate([0, 8-distance_from_head, -10+nozzle_height/2+distance_from_ground])
+			rotate([55, 0, 0])
+			hull()
 			{
-				cylinder(r1=fan_size/5-t, r2=fan_size/2-t, h=15+j);
-				translate([0,0,15-j])cylinder(r=fan_size/2-t, h=15);
+				translate([-w2/2+corners, h2/2-corners, 0]) cylinder(r=corners+j, h=5/2, center=false, $fn=detail);
+				translate([ w2/2-corners, h2/2-corners, 0]) cylinder(r=corners+j, h=5/2, center=false, $fn=detail);
+				translate([w2/2-corners, -h2/2+corners, 0]) cylinder(r=corners+j, h=5/2, center=false, $fn=detail);
+				translate([-w2/2+corners, -h2/2+corners, 0]) cylinder(r=corners+j, h=5/2, center=false, $fn=detail);
 			}
-
-			translate([0, 0, t])
-			cylinder(r=100, h=100, $fn=5);
 		}
 
-		// hollow out the torus
-		intersection()
+		translate([0, 8-distance_from_head, -10+nozzle_height/2+distance_from_ground])
+		rotate([55+180, 0, 0])
+		hull()
 		{
-			translate([0, 0, 8.9])
-			torus2(30+t*2, 40-t*4, sides=torus_sides, facets=torus_facets);
-
-			translate([0, 0, t*4])
-			cylinder(r=100, h=100, $fn=5);
+			translate([-w2/2+corners, h2/2-corners, -j]) cylinder(r=corners+j, h=5, $fn=detail);
+			translate([ w2/2-corners, h2/2-corners, -j]) cylinder(r=corners+j, h=5, $fn=detail);
+			translate([w2/2-corners, -h2/2+corners, -j]) cylinder(r=corners+j, h=5, $fn=detail);
+			translate([-w2/2+corners, -h2/2+corners, -j]) cylinder(r=corners+j, h=5, $fn=detail);
 		}
 		
-		// level off the bottom
-		rotate([180,0,0])
-		cylinder(r=100, h=100, $fn=5);
-		
-		// Nozzles
-		for(i=[0:jet_count])
-		{
-			rotate([0, 0, (360/jet_count)*i])
-			translate([27, 0, t*5]) 
-			rotate([180,30,0])
-			cylinder(r=jet_size/2, h=30);
-		}
 
-		//*DEBUG Horizontal slice*/translate([0,0,15]) cylinder(r=100, h=100);
-		//*DEBUG Vertical slice*/translate([0,0,0]) rotate([90,0,0]) cylinder(r=100, h=100);
+		//*DEBUG Slice across X*/translate([0,0,0]) rotate([90,0,0]) cylinder(r=100, h=100);
+		//*DEBUG Slice across Y*/translate([0,0,0]) rotate([0,90,0]) cylinder(r=100, h=100);
+		//*DEBUG Slice across Z*/translate([0,0,15]) cylinder(r=100, h=100);
 	}
 }
 
+
+module FanBracket()
+{
+	Bracket(angle=bracket_angle, height=23);
+}
 
 module Gasket()
 {
@@ -132,14 +144,14 @@ if(part == "all")
 	%XCarriage();
 
 	// The complete airhead rig
-	translate([0, 2, ZPrime-7])
+	translate([0, 2, ZPrime-7-10])
 	union()
 	{
 		translate([0, -17, 0])
 		union()
 		{
 			translate([0, 0, -bracket_thickness/2])
-			Bracket(angle=bracket_angle, height=13);
+			FanBracket();
 
 			rotate([bracket_angle, 0, 0])
 			translate([0, -fan_size/2-4, gasket_thickness])
@@ -151,7 +163,7 @@ if(part == "all")
 		}
 	}
 	
-	translate([0, 1, 21])
+	translate([0, 1, 11])
 	AirHead();
 }
 
@@ -159,6 +171,8 @@ if(part == "duct")
 {
 	difference()
 	{
+		translate([0, 0, 33])
+		rotate([bracket_angle+90, 0, 0])
 		AirHead();
 
 		//*DEBUG Horizontal Slice*/translate([0, 0, 5]) cylinder(r=1000, h=1000, $fn=detail);
@@ -170,7 +184,7 @@ if(part == "bracket")
 {
 	translate([0, 0, t])
 	rotate([-bracket_angle,0,0])
-	Bracket(angle=bracket_angle, height=13);
+	FanBracket();
 }
 
 if(part == "gasket")
