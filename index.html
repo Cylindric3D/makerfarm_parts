@@ -15,43 +15,6 @@
 
 		<title>MakerFarm Parts by Cylindric3D</title>
 
-		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
-		<style>
-			.chromeFrameInstallDefaultStyle {
-				margin-top: 10px;
-				width: 800px;
-				border: 5px solid blue;
-			}
-		</style>
-		<script src="javascripts/Three.js"></script>
-		<script src="javascripts/plane.js"></script>
-		<script src="javascripts/thingiview.js"></script>
-
-		<script>
-			window.onload = function() {
-				// You may want to place these lines inside an onload handler
-				CFInstall.check({
-					mode: "inline", // the default
-					node: "prompt"
-				});
-
-				thingiurlbase = "javascripts";
-				thingiview = new Thingiview("viewer");
-				thingiview.setObjectColor('#C0D8F0');
-				thingiview.initScene();
-				thingiview.loadSTL("../stl/part-x-side.stl");
-			}
-
-			function getUrlVars() {
-				var vars = {};
-				var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-					vars[key] = value;
-				});
-				return vars;
-			}    
-		</script>
-
-
 	</head>
 
 	<body>
@@ -67,12 +30,25 @@
 			<div class="inner clearfix">
 				<section id="main-content">
 					<h3><a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to Cylindric3D's MakerFarm Parts</h3>
-					<h4>X-Carriage Side Bracket</h4>
-					<img src="images/part-x-side.png" width="200" style="float:left;" />
-					<p>This replaces the small triangular side-bracket of the X-Carriage. The OpenSCAD file has parameters for cutting a hole to fit a servo, or the normal end-stop bolt. There are also (optional) holes at the lower end of the bracket to attach other accessories, such as LED rings, probe-mounts, whatever.</p>
+
+					<h4>X-Carriage Side Bracket - Standard</h4>
+					<img src="images/part-x_side.png" width="200" style="float:left;" />
+					<p>This replaces the small triangular side-bracket of the X-Carriage. There are different versions to create servo-mounts, depth-probe mounts and solenoid mounts.
 					
-					<h4 style="clear:both;">RaspberryPi Camera Bracket</h4>
-					<img src="images/picam-mount.png" width="200" style="float:left;" />
+					<h4>X-Carriage Side Bracket - Servo</h4>
+					<img src="images/x_servomount.png" width="200" style="float:left;" />
+					<p>This replaces the small triangular side-bracket of the X-Carriage, and has the holes for mounting a servo.
+					
+					<h4>X-Carriage Side Bracket - Depth-Probe</h4>
+					<img src="images/x_depthmount.png" width="200" style="float:left;" />
+					<p>This replaces the small triangular side-bracket of the X-Carriage, and has an attachment point for a depth-probe.
+					
+					<h4>X-Carriage Side Bracket - Solenoid</h4>
+					<img src="images/x_solenoidmount.png" width="200" style="float:left;" />
+					<p>This replaces the small triangular side-bracket of the X-Carriage, and has an attachment point for a solenoid. This is for an experimental Z-probe.
+					
+					<h4>RaspberryPi Camera Bracket</h4>
+					<img src="images/picam_mount.png" width="200" style="float:left;" />
 					<p>A simple bracket to mount a RaspberryPi camera module to the back of the printer. The OpenSCAD file has parameters in it to allow adjusting how far across the camera will sit.</p>
 					
 					<h3 style="clear:both;"><a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
