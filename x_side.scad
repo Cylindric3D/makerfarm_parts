@@ -1,9 +1,4 @@
-include <lib/DepthGauge.scad>
-
-// Panel thickness
-//t=6.35;
-
-// Jitter. This should be much less than one layer height.
+	// Jitter. This should be much less than one layer height.
 j=0.03;
 
 function PanelThickness()=6.35;
